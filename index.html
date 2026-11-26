@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sudoku Arena: Human vs AI (3D Edition)</title>
+  <meta name="description" content="A modern, high-performance interactive Sudoku Arena featuring an educational slow-motion AI visualizer with DFS backtracking, MRV hints, and 8 difficulty tiers.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- =================================================================== -->
+  <!-- 1. SCREEN: WELCOME / HOME PAGE                                      -->
+  <!-- =================================================================== -->
+  <div id="screen-home" class="screen screen-home active">
+    <div class="panel-3d home-card">
+      <div class="badge-pill">TOURNAMENT EDITION &bull; AI CSP ENGINE</div>
+      <h1 class="hero-title">SUDOKU ARENA</h1>
+      <p class="hero-subtitle">HUMAN VS ARTIFICIAL INTELLIGENCE</p>
+      <div class="divider-groove"></div>
+
+      <div class="menu-button-group">
+        <button id="btn-home-play" class="btn-3d btn-primary btn-large">
+          <svg class="icon" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20" fill="currentColor"/></svg>
+          <span>PLAY GAME</span>
+        </button>
+
+        <button id="btn-home-levels" class="btn-3d btn-secondary btn-large">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="14" width="4" height="7" rx="1" fill="currentColor"/><rect x="10" y="9" width="4" height="12" rx="1" fill="currentColor"/><rect x="17" y="4" width="4" height="17" rx="1" fill="currentColor"/></svg>
+          <span>SELECT DIFFICULTY (8 TIERS)</span>
+        </button>
+
+        <button id="btn-home-demo" class="btn-3d btn-accent btn-large">
+          <svg class="icon" viewBox="0 0 24 24"><polygon points="5,5 15,12 5,19" fill="currentColor"/><rect x="17" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>
+          <span>WATCH AI SOLVE (DEMO)</span>
+        </button>
+      </div>
+
+      <div class="util-button-group">
+        <button id="btn-home-theme" class="btn-3d btn-secondary">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 3 A 9 9 0 0 0 12 21 Z" fill="currentColor"/></svg>
+          <span class="theme-label">THEME</span>
+        </button>
+
+        <button id="btn-home-fs" class="btn-3d btn-secondary">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+          <span>FULLSCREEN</span>
+        </button>
+      </div>
+
+      <div class="home-footer" id="home-footer-tier">
+        CURRENT TIER: MEDIUM (44 CLUES) &bull; PRESS F11 FOR FULLSCREEN
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- 2. SCREEN: LEVELS SELECTION PAGE                                    -->
+  <!-- =================================================================== -->
+  <div id="screen-levels" class="screen screen-levels">
+    <header class="top-bar">
+      <button id="btn-levels-back" class="btn-3d btn-secondary">
+        <svg class="icon" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+        <span>BACK TO HOME</span>
+      </button>
+
+      <div class="levels-header-center">
+        <h2 class="section-title">CHOOSE DIFFICULTY TIER</h2>
+        <p class="section-subtitle">8 mathematically calibrated tiers from 60 clues down to 17 minimal clues</p>
+      </div>
+
+      <div class="top-bar-right">
+        <button id="btn-levels-theme" class="btn-3d btn-secondary btn-icon-only" title="Toggle Theme">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 3 A 9 9 0 0 0 12 21 Z" fill="currentColor"/></svg>
+        </button>
+        <button id="btn-levels-fs" class="btn-3d btn-secondary btn-icon-only" title="Toggle Fullscreen">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="levels-grid-container" id="levels-container">
+      <!-- Generated dynamically in app.js with 3D tactile cards and procedural gold stars -->
+    </div>
+
+    <footer class="levels-footer">
+      <span>Every puzzle has a mathematically guaranteed unique solution.</span>
+    </footer>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- 3. SCREEN: GAME ARENA                                               -->
+  <!-- =================================================================== -->
+  <div id="screen-game" class="screen screen-game">
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <button id="btn-game-home" class="btn-3d btn-secondary">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v11a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+          <span>HOME</span>
+        </button>
+        <button id="btn-game-levels" class="btn-3d btn-secondary">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="14" width="4" height="7" rx="1" fill="currentColor"/><rect x="10" y="9" width="4" height="12" rx="1" fill="currentColor"/><rect x="17" y="4" width="4" height="17" rx="1" fill="currentColor"/></svg>
+          <span>LEVELS</span>
+        </button>
+      </div>
+
+      <div class="level-indicator-pill" id="current-tier-badge">
+        LEVEL 3: MEDIUM (44 CLUES)
+      </div>
+
+      <div class="top-bar-right">
+        <button id="btn-game-theme" class="btn-3d btn-secondary">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 3 A 9 9 0 0 0 12 21 Z" fill="currentColor"/></svg>
+          <span class="theme-label">THEME</span>
+        </button>
+        <button id="btn-game-fs" class="btn-3d btn-secondary btn-icon-only" title="Toggle Fullscreen">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="arena-layout">
+      <!-- Left Column: 3D Sudoku Tray & Numpad -->
+      <div class="arena-left">
+        <div class="grid-tray-3d">
+          <div class="sudoku-grid" id="sudoku-board">
+            <!-- 81 3D cells generated in app.js -->
+          </div>
+        </div>
+
+        <!-- 3D Tactile Mechanical Numpad -->
+        <div class="numpad-3d" id="numpad-container">
+          <button class="btn-3d btn-num" data-num="1">1</button>
+          <button class="btn-3d btn-num" data-num="2">2</button>
+          <button class="btn-3d btn-num" data-num="3">3</button>
+          <button class="btn-3d btn-num" data-num="4">4</button>
+          <button class="btn-3d btn-num" data-num="5">5</button>
+          <button class="btn-3d btn-num" data-num="6">6</button>
+          <button class="btn-3d btn-num" data-num="7">7</button>
+          <button class="btn-3d btn-num" data-num="8">8</button>
+          <button class="btn-3d btn-num" data-num="9">9</button>
+          <button class="btn-3d btn-danger btn-num" id="btn-erase" title="Clear Cell (Del)">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M6 5 L2 12 L6 19 L21 19 L21 5 Z" stroke="currentColor" stroke-width="2" fill="none"/><line x1="10" y1="9" x2="16" y2="15" stroke="currentColor" stroke-width="2"/><line x1="16" y1="9" x2="10" y2="15" stroke="currentColor" stroke-width="2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Column: Simplified 3D Telemetry Cards -->
+      <div class="arena-right">
+        <!-- Card 1: Race Timers with Recessed Gauges -->
+        <div class="panel-3d card-timers">
+          <div class="gauge-recessed">
+            <span class="gauge-label">HUMAN TIME</span>
+            <span class="gauge-value" id="timer-human">00:00.0</span>
+          </div>
+          <div class="gauge-recessed">
+            <span class="gauge-label">AI TIME</span>
+            <span class="gauge-value" id="timer-ai">00.00 s</span>
+          </div>
+        </div>
+
+        <!-- Card 2: AI Visualizer & Telemetry -->
+        <div class="panel-3d card-telemetry">
+          <div class="card-header-row">
+            <span class="card-title">AI VISUAL SOLVER (DFS + BACKTRACKING)</span>
+          </div>
+
+          <!-- 3D Recessed Display Box with Hardware LED -->
+          <div class="display-box-recessed" id="ai-display-box">
+            <div class="led-jewel state-idle" id="ai-led"></div>
+            <div class="ai-status-text" id="ai-status-msg">Ready. Watch AI solve step-by-step or solve it yourself!</div>
+          </div>
+
+          <!-- Telemetry Counters -->
+          <div class="telemetry-stats-row">
+            <div class="stat-col">
+              <span class="stat-label">Explored Choices:</span>
+              <span class="stat-num" id="stat-explored">0</span>
+            </div>
+            <div class="stat-col">
+              <span class="stat-label">Backtracks (Wrong):</span>
+              <span class="stat-num stat-wrong" id="stat-backtracks">0</span>
+            </div>
+            <div class="stat-col">
+              <span class="stat-label">Prune Ratio:</span>
+              <span class="stat-num" id="stat-ratio">0.0%</span>
+            </div>
+          </div>
+
+          <!-- AI Speed Presets -->
+          <div class="speed-controls-row">
+            <span class="speed-label">AI Speed (Decision Inspection):</span>
+            <div class="speed-buttons-group">
+              <button class="btn-3d btn-speed active" data-speed="ultra_slow">0.6s</button>
+              <button class="btn-3d btn-speed" data-speed="slow">0.25s</button>
+              <button class="btn-3d btn-speed" data-speed="medium">0.08s</button>
+              <button class="btn-3d btn-speed" data-speed="fast">FAST</button>
+              <button class="btn-3d btn-speed" data-speed="instant">MAX</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Action Controls -->
+        <div class="action-buttons-group">
+          <div class="action-row">
+            <button id="btn-ai-solve" class="btn-3d btn-accent">
+              <svg class="icon" id="solve-icon" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20" fill="currentColor"/></svg>
+              <span id="solve-text">AI SOLVE</span>
+            </button>
+            <button id="btn-ai-step" class="btn-3d btn-primary">
+              <svg class="icon" viewBox="0 0 24 24"><polygon points="5,5 15,12 5,19" fill="currentColor"/><rect x="17" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>
+              <span>STEP AI &gt;</span>
+            </button>
+          </div>
+
+          <div class="action-row">
+            <button id="btn-hint" class="btn-3d btn-warning">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+              <span>HINT (MRV)</span>
+            </button>
+            <button id="btn-reset" class="btn-3d btn-danger">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" stroke="currentColor" stroke-width="2.5" fill="none"/><polygon points="3,3 3,9 9,9" fill="currentColor"/></svg>
+              <span>RESET BOARD</span>
+            </button>
+          </div>
+
+          <button id="btn-new-puzzle" class="btn-3d btn-secondary btn-full">
+            <span>NEW PUZZLE</span>
+          </button>
+        </div>
+
+        <!-- Card 4: Keyboard Shortcuts -->
+        <div class="panel-3d card-shortcuts">
+          <div class="shortcuts-title">KEYBOARD SHORTCUTS</div>
+          <div class="shortcuts-grid">
+            <div class="shortcut-item"><code>Arrows</code> Move cell</div>
+            <div class="shortcut-item"><code>1 - 9</code> Place number</div>
+            <div class="shortcut-item"><code>Del / 0</code> Erase cell</div>
+            <div class="shortcut-item"><code>H</code> MRV Hint</div>
+            <div class="shortcut-item"><code>Space / S</code> AI Solve / Pause</div>
+            <div class="shortcut-item"><code>F11</code> Fullscreen</div>
+            <div class="shortcut-item"><code>N</code> New Puzzle</div>
+            <div class="shortcut-item"><code>T</code> Toggle Theme</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 3D Victory Modal Overlay -->
+    <div id="victory-modal" class="modal-overlay hidden">
+      <div class="panel-3d modal-card">
+        <h2 class="modal-title" id="vic-title">HUMAN VICTORY!</h2>
+        <p class="modal-time" id="vic-time">Time: 00:00.0</p>
+        <div class="modal-buttons">
+          <button id="btn-vic-new" class="btn-3d btn-primary">NEW PUZZLE</button>
+          <button id="btn-vic-levels" class="btn-3d btn-secondary">CHOOSE LEVEL</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
