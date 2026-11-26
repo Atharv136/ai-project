@@ -603,8 +603,6 @@ class SudokuArenaApp {
     }
 
     this.isHumanActive = false;
-    this.aiRunning = true;
-    this.updateSolveButton();
 
     if (!this.aiGenerator) {
       // Revert user digits
@@ -688,7 +686,14 @@ class SudokuArenaApp {
   }
 
   startAILoop() {
-    this.stopAILoop();
+    if (this.aiTimerHandle) {
+      clearInterval(this.aiTimerHandle);
+      cancelAnimationFrame(this.aiTimerHandle);
+      this.aiTimerHandle = null;
+    }
+    this.aiRunning = true;
+    this.updateSolveButton();
+
     const interval = this.aiSpeeds[this.aiSpeedId].interval;
 
     if (interval === 0) {
@@ -705,7 +710,10 @@ class SudokuArenaApp {
       };
       this.aiTimerHandle = requestAnimationFrame(runBatch);
     } else {
-      // Educational Step Mode: distinct visible delay
+      // Educational Step Mode: execute the first step immediately for responsiveness
+      this.executeSingleAIStep();
+      if (!this.aiRunning) return;
+
       this.aiTimerHandle = setInterval(() => {
         if (!this.aiRunning) {
           this.stopAILoop();
@@ -812,6 +820,7 @@ class SudokuArenaApp {
         if (tag === "initial") cell.classList.add("initial");
         else if (tag === "user") cell.classList.add("user");
         else if (tag === "hint") cell.classList.add("hint");
+        else if (tag === "ai") cell.classList.add("ai");
 
         // Crosshair highlighting
         if (selR >= 0) {
